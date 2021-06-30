@@ -1,0 +1,26 @@
+# Phpstorm
+.idea/*
+
+# Netbeans
+nbproject/*
+
+# log files
+logs/*
+
+# NPM
+node_modules/*
+
+# Composer
+vendor/*
+
+# dummy package contents
+robo.yml
+
+# apple
+.DS_Store
+
+# phpunit cache file
+.phpunit.result.cache
+
+# zend server credentials
+config/zendserver.php

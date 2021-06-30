@@ -1,0 +1,30 @@
+{
+  "name": "foobarfighters/robo-zend-server",
+  "description": "Zend Server CommandStack for Robo Task Runner",
+  "type": "robo-tasks",
+  "authors": [
+    {
+      "name": "Michael Tjaden",
+      "email": "michael.tjaden@gmail.com"
+    }
+  ],
+  "require-dev": {
+    "consolidation/robo": "^3.0"
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "FooBarFighters\\": "src/"
+    }
+  },
+  "require": {
+    "foobarfighters/zend-server-web-api": ">=0.0.4",
+    "ext-zip": "*",
+    "ext-json": "*"
+  },
+  "scripts": {
+    "robo": "vendor/bin/robo"
+  }
+}
