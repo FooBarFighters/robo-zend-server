@@ -8,9 +8,6 @@
       "email": "michael.tjaden@gmail.com"
     }
   ],
-  "require-dev": {
-    "consolidation/robo": "^3.0"
-  },
   "config": {
     "sort-packages": true
   },
@@ -20,9 +17,13 @@
     }
   },
   "require": {
+    "consolidation/robo": "^3.0",
     "foobarfighters/zend-server-web-api": ">=0.0.4",
     "ext-zip": "*",
     "ext-json": "*"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
   },
   "scripts": {
     "robo": "vendor/bin/robo"
