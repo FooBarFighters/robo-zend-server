@@ -18,7 +18,7 @@
   },
   "require": {
     "consolidation/robo": "^3.0",
-    "foobarfighters/zend-server-web-api": ">=0.0.4",
+    "foobarfighters/zend-server-web-api": ">=0.0.5",
     "ext-zip": "*",
     "ext-json": "*"
   },
