@@ -3,6 +3,7 @@
 namespace FooBarFighters\Robo\Task\ZendServer;
 
 use Robo\Result;
+use Robo\State\Data;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 
 class SelectAppTask extends ZendServerTask
@@ -28,10 +29,9 @@ class SelectAppTask extends ZendServerTask
      * @param string|null $env
      * @param string|null $appRef
      */
-    public function __construct(?string $env = null, ?string $appRef = null)
+    public function __construct(?string $appRef = null, ?string $env = null)
     {
         parent::__construct($env);
-
         $this->appId = $this->getAppId($appRef);
         if($this->appId === null){
             $this->appName = $appRef;
@@ -39,10 +39,12 @@ class SelectAppTask extends ZendServerTask
         $this->appRef = $appRef;
     }
 
-    private function getAppId(?string $appRef): ?int
+    /**
+     * @param Data $state
+     */
+    public function receiveState(Data $state):void
     {
-        $id = (int)$appRef;
-        return $id === 0 ? null : $id;
+        $this->env = $state['env'] ?? null;
     }
 
     /**
@@ -53,6 +55,8 @@ class SelectAppTask extends ZendServerTask
     public function run(): Result
     {
         $io = $this->io();
+
+        //== fetch apps
         $appList = $this->getClient()->getApps();
 
         //== resolve the application by id or name
@@ -64,7 +68,9 @@ class SelectAppTask extends ZendServerTask
 
         //== user supplied app id or name didn't validate,
         if($app === null){
-            $io->warning('Could not resolve an application with the supplied reference: ' . $this->appRef);
+            if($this->appRef){
+                $io->warning('Could not resolve an application with the supplied reference: ' . $this->appRef);
+            }
 
             $apps = $appList->getNames();
             $default = array_keys($apps)[0];
@@ -83,11 +89,20 @@ class SelectAppTask extends ZendServerTask
             }
         }
 
-        $io->success("You have selected: [{$app->getId()}] {$app->getName()}");
-
         return Result::success($this, "select app", [
             'app' => $app,
             'env' => $this->env,
         ]);
+    }
+
+    /**
+     * @param string|null $appRef
+     *
+     * @return int|null
+     */
+    private function getAppId(?string $appRef): ?int
+    {
+        $id = (int)$appRef;
+        return $id === 0 ? null : $id;
     }
 }

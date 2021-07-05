@@ -5,7 +5,7 @@ namespace FooBarFighters\Robo\Task\ZendServer;
 use FooBarFighters\ZendServer\WebApi\Repository\AppList;
 use Robo\Result;
 
-class AppsTask extends ZendServerTask
+class FetchAppsTask extends ZendServerTask
 {
 
     /**
@@ -25,6 +25,6 @@ class AppsTask extends ZendServerTask
             $apps[$env] = $this->getClient($env)->getApps();
         }
 
-        return Result::success($this, "Array of AppLists", ['apps' => $apps, 'time' => $this->getExecutionTime()]);
+        return Result::success($this, "Array of AppLists", ['apps' => $apps]);
     }
 }

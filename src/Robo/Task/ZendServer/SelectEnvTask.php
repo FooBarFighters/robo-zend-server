@@ -22,7 +22,7 @@ class SelectEnvTask extends ZendServerTask
             $this->env = $io->askQuestion($question);
             $io->newLine();
         }
-        $io->success('You have selected the environment: ' . $this->env);
+
         return Result::success($this, "Select env", [
             'env' => $this->env,
         ]);
