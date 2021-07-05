@@ -3,9 +3,7 @@
 namespace FooBarFighters\Robo\Plugin\Commands;
 
 use FooBarFighters\ZendServer\WebApi\Model\App;
-use FooBarFighters\ZendServer\WebApi\Model\Package;
 use FooBarFighters\ZendServer\WebApi\Repository\AppList;
-use FooBarFighters\ZendServer\WebApi\Util\PackageBuilder;
 use Robo\Symfony\ConsoleIO;
 use Robo\Tasks;
 
@@ -18,30 +16,24 @@ class ZendServerCommands extends Tasks
      *
      * @command zs:deploy
      */
-    public function deployApp(ConsoleIO $io, ?string $env = null, ?string $appRef = null, ?string $zipPath = null): void
+    public function deployApp(ConsoleIO $io, ?string $env = null, ?string $appRef = null): void
     {
         try {
-            //== determine environment
-            /** @var string $env */
-            $env =  $this->taskSelectEnv($env)->run()->getData()['env'];
+            $cb = $this->collectionBuilder();
+            $result = $cb
+                ->taskSelectEnv($env)
+                ->taskSelectApp($appRef)
+                ->taskCreateDummyPackage()
+                ->taskConfirmSelection(__FUNCTION__)
+                ->taskDeployApp()
+            ->run();
 
-            //== determine app
             /** @var App $app */
-            $app = $this->taskSelectApp($env, $appRef)->run()->getData()['app'];
+            $app = $cb->getState()['app'];
 
-            //== create a dummy package if no path to a real package is supplied
-            $zipPath = $zipPath ?: PackageBuilder::createDummy($app->getName(), getcwd(), 'test_')->getPath();
-
-            $package = Package::createFromArchive($zipPath);
-
-            //== deploy app
-            $io->title("Let's deploy this puppy! - " . filesize($package->getPath())/1000 . 'kb');
-            $data = $this->taskDeploy($zipPath, $env, $app->getId())->run()->getData();
-            $app = $data['app'];
-            $io->writeln("visit the result at {$app->getUrl()}");
             $io->newLine();
             if($app){
-                $time = round($data['time'],3);
+                $time = round($result->getExecutionTime(),3);
                 $io->success("{$app->getName()} ({$app->getId()}) has updated to version \"{$app->getDeployedVersion()}\" in {$time} seconds"); //
             }
 
@@ -58,7 +50,7 @@ class ZendServerCommands extends Tasks
     public function displayApps(ConsoleIO $io, string $env = null)
     {
         try {
-            $task = $this->taskApps($env);
+            $task = $this->taskFetchApps($env);
 
             /** @var AppList[] $apps */
             $apps = $task->run()['apps'];
@@ -81,7 +73,6 @@ class ZendServerCommands extends Tasks
                 $rows[] = ['', '', '', '', '', ''];
                 $r = array_merge($r, $rows);
             }
-
             $io->table(['env', 'id', 'name', 'version', 'rollback version', 'updated'], $r);
 
         } catch (\Exception $e) {
@@ -116,34 +107,29 @@ class ZendServerCommands extends Tasks
     }
 
     /**
-     *
+     * Rollback an app to its previous version.
      *
      * @command zs:rollback
      */
     public function rollbackApp(ConsoleIO $io, ?string $env = null, ?string $appRef = null)
     {
         try{
-            //== determine environment
-            $env = $this->taskSelectEnv($env)->run()->getData()['env'];
+            $cb = $this->collectionBuilder();
+            $result = $cb
+                ->taskSelectEnv($env)
+                ->taskSelectApp($appRef)
+                ->taskConfirmSelection(__FUNCTION__)
+                ->taskRollbackApp()
+            ->run();
 
-            //== determine app
-            $app = $this->taskSelectApp($env, $appRef)->run()->getData()['app']; //var_dump($app); die;
+            /** @var App $app */
+            $app = $cb->getState()['app'];
 
-            //== rollback the app to the previous version
-            $result = $this->taskRollback($env, $app->getId())->run();
             $time = round($result->getExecutionTime(),3);
             $io->success("{$app->getName()} ({$app->getId()}) has been rolled back to version \"{$app->getRollbackVersion()}\" in {$time} seconds"); //
         }
         catch (\Exception $e){
             $io->error($e->getMessage());
         }
-    }
-
-    /**
-     * @command zs:test
-     */
-    public function test(ConsoleIO $io, ?string $env = null)
-    {
-
     }
 }
